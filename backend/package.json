@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "ts-node src/server.ts",
     "dev": "nodemon --exec ts-node src/server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "prod": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
     "@tensorflow/tfjs": "^4.22.0",
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "pg": "^8.18.0"
   },
