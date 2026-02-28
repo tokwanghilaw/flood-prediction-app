@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Prediction {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  rainfall    Float[]
+  lakeLevel   Float[]
+  hours       Json     // full hours array from API
+  bounds      Json
+  demPng      String
+  lakePng     String
+  thresholds  Json
+  // future PostGIS columns
+  @@map("predictions")
+}

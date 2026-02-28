@@ -14,13 +14,15 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@prisma/client": "^7.4.2",
     "@tensorflow/tfjs": "^4.22.0",
     "axios": "^1.13.6",
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
-    "pg": "^8.18.0"
+    "pg": "^8.18.0",
+    "prisma": "^7.4.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

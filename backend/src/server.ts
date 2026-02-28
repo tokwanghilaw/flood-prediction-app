@@ -1,6 +1,6 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import 'dotenv/config'; 
 import { Pool } from 'pg';
 import predictRouter from './routes/predict';
 import axios from 'axios';
@@ -108,6 +108,25 @@ app.get('/api/flood-data', async (req, res) => {
 // Simple health-check endpoint
 app.get('/api/test', (req, res) => {
   res.json({ status: 'ok', message: 'Backend is alive' });
+});
+
+// ====================== CONV-LSTM PYTHON PROXY (from API_README) ======================
+app.post('/api/predict', async (req: any, res: any) => {
+  console.log('📥 Received request:', req.body);
+  const pythonUrl = process.env.PYTHON_API_URL || 'http://localhost:8000';
+
+  try {
+    const response = await axios.post(`${pythonUrl}/predict`, req.body, { timeout: 45000 });
+    console.log('✅ Prediction success');
+    res.json(response.data);
+  } catch (error: any) {
+    console.error('❌ Python API error:', error.message);
+    res.status(500).json({ 
+      error: 'Prediction failed', 
+      details: error.message,
+      hint: 'Is Python API running on port 8000?'
+    });
+  }
 });
 
 app.listen(port, () => {
