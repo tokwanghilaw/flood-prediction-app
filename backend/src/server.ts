@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config'; 
 import { Pool } from 'pg';
+import predictRouter from './routes/predict';
 // import * as tf from '@tensorflow/tfjs'; // Placeholder for model
 
 const app = express();
@@ -114,3 +115,5 @@ app.listen(port, () => {
   console.log(`  GET http://localhost:${port}/api/test`);
   console.log(`  GET http://localhost:${port}/api/flood-data`);
 });
+
+app.use('/api', predictRouter);

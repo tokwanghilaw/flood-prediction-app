@@ -12,12 +12,37 @@ const Popup        = dynamic(() => import('react-leaflet').then(mod => mod.Popup
 const GeoJSON      = dynamic(() => import('react-leaflet').then(mod => mod.GeoJSON),      { ssr: false });
 
 // ────────────────────────────────────────────────
-// Type definition for the flood data structure
+// Type definitions
 // ────────────────────────────────────────────────
+// Backend response structure from Python API
+interface BackendResponse {
+  hours: string[];
+  bounds: number[];
+  dem_png: string;
+  lake_png: string;
+  thresholds: Record<string, number[]>; // e.g. { Sipocot: [0.5, 1.0, 1.8, ...], Balongay: [...], ... }
+}
+
+// Frontend flood data structure
 interface FloodTimeStep {
   time: string;
   depths: Record<string, number>;   // e.g. { Sipocot: 0.5, Balongay: 1.0, ... }
 }
+
+// Transform backend response to FloodTimeStep format
+const transformBackendResponse = (response: BackendResponse): FloodTimeStep[] => {
+  const { hours, thresholds } = response;
+  return hours.map((time, index) => ({
+    time,
+    depths: Object.entries(thresholds).reduce(
+      (acc, [location, values]) => {
+        acc[location] = values[index] || 0;
+        return acc;
+      },
+      {} as Record<string, number>
+    ),
+  }));
+};
 
 // Mock data – fallback when backend fetch fails
 const mockFloodData: FloodTimeStep[] = [
@@ -91,19 +116,24 @@ const Home = () => {
   useEffect(() => {
     const fetchFloodData = async () => {
       try {
-        const res = await fetch('/api/flood-prediction');
+        const res = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rainfall: [12.5, 15.2, 18.0, 22.1, 25.5],
+            lake_level: [1.2, 1.5, 1.8, 2.1, 2.5],
+          }),
+        });
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         const data = await res.json();
 
-        // Basic validation – make sure it's an array of expected shape
-        if (Array.isArray(data) && data.every(item => 
-          typeof item === 'object' && 
-          'time' in item && typeof item.time === 'string' &&
-          'depths' in item && typeof item.depths === 'object'
-        )) {
-          setFloodData(data as FloodTimeStep[]);
+        // Validate and transform backend response
+        if (data && typeof data === 'object' && 'hours' in data && 'thresholds' in data) {
+          const transformedData = transformBackendResponse(data as BackendResponse);
+          setFloodData(transformedData);
         } else {
           console.warn('Unexpected data format from backend, using mock data');
           setFloodData(mockFloodData);
