@@ -3,6 +3,7 @@ import cors from 'cors';
 import 'dotenv/config'; 
 import { Pool } from 'pg';
 import predictRouter from './routes/predict';
+import axios from 'axios';
 // import * as tf from '@tensorflow/tfjs'; // Placeholder for model
 
 const app = express();
