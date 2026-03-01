@@ -1,11 +1,12 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 
 const app = express();
 const port = 5000;
+const prisma = new PrismaClient();
 
 app.use(cors());
 app.use(express.json());
@@ -32,34 +33,55 @@ app.post('/api/predict', async (req: any, res: any) => {
   }
 });
 
-// ====================== SAVE TO DATABASE ======================
-app.post('/api/save-prediction', async (req: any, res: any) => {
-  const prisma = new PrismaClient();  
-
+// ====================== SAVE PREDICTION TO DATABASE ======================
+app.post('/api/save-prediction', async (req: Request, res: Response) => {
   try {
     const { prediction, rainfall, lake_level } = req.body;
 
+    if (!prediction || !prediction.hours) {
+      return res.status(400).json({ success: false, error: 'Invalid prediction data' });
+    }
+
+    // Optional: calculate summary values (very useful for later queries)
+    const maxFlooded = Math.max(...prediction.hours.map((h: any) => h.flooded_land_pct || 0));
+    const maxDepth = Math.max(...prediction.hours.map((h: any) => h.max_depth_m || 0));
+    const highestWarning = prediction.hours[0]?.warning_level || "NORMAL";
+
     const saved = await prisma.prediction.create({
       data: {
-        rainfall,
-        lakeLevel: lake_level,
-        hours: prediction.hours,
+        rainfall: rainfall,                    // Float[]
+        lakeLevel: lake_level,                 // Float[]
+        hours: prediction.hours,               // Json (full data + all PNGs)
         bounds: prediction.bounds,
         demPng: prediction.dem_png,
         lakePng: prediction.lake_png,
         thresholds: prediction.thresholds,
+        maxFloodedLandPct: maxFlooded,
+        maxDepthM: maxDepth,
+        highestWarning: highestWarning,
       },
     });
 
-    console.log(`✅ Saved to DB! ID: ${saved.id}`);
-    res.json({ success: true, id: saved.id });
+    console.log(`✅ Prediction saved to DB! ID: ${saved.id}`);
+
+    res.json({ 
+      success: true, 
+      id: saved.id,
+      message: 'Prediction saved successfully'
+    });
+
   } catch (error: any) {
-    console.error('Save error:', error);
-    res.status(500).json({ error: 'Failed to save' });
+    console.error('❌ Save error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to save to database', 
+      details: error.message 
+    });
   } finally {
-    await prisma.$disconnect();
+    // await prisma.$disconnect();
   }
 });
+// =====================================================================
 
 // ====================== HISTORY ======================
 app.get('/api/history', async (req: any, res: any) => {

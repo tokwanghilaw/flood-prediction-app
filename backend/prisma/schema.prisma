@@ -11,13 +11,16 @@ model Prediction {
   createdAt   DateTime @default(now())
   rainfall    Float[]
   lakeLevel   Float[]
-  hours       Json     // full hours array from API
+  hours       Json
   bounds      Json
   demPng      String
   lakePng     String
   thresholds  Json
+
+  // (optional summary fields you can add later)
   maxFloodedLandPct  Float?
   maxDepthM          Float?
   highestWarning     String?
+
   @@map("predictions")
 }
