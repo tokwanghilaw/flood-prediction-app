@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Prediction {
@@ -17,6 +16,8 @@ model Prediction {
   demPng      String
   lakePng     String
   thresholds  Json
-  // future PostGIS columns
+  maxFloodedLandPct  Float?
+  maxDepthM          Float?
+  highestWarning     String?
   @@map("predictions")
 }
