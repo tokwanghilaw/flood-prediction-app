@@ -6,7 +6,7 @@ import { PrismaClient } from '@prisma/client';
 
 const app = express();
 const port = 5000;
-const prisma = new PrismaClient();
+import prisma from './lib/prisma'
 
 app.use(cors());
 app.use(express.json());
@@ -19,7 +19,7 @@ app.post('/api/predict', async (req: any, res: any) => {
   try {
     console.log('⏳ Calling Python API (may take 30-60s first time)...');
     const response = await axios.post(`${pythonUrl}/predict`, req.body, { 
-      timeout: 90000   // ← increased to 90 seconds
+      timeout: 90000 
     });
     console.log('✅ Python API success');
     res.json(response.data);
@@ -42,7 +42,6 @@ app.post('/api/save-prediction', async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, error: 'Invalid prediction data' });
     }
 
-    // Optional: calculate summary values (very useful for later queries)
     const maxFlooded = Math.max(...prediction.hours.map((h: any) => h.flooded_land_pct || 0));
     const maxDepth = Math.max(...prediction.hours.map((h: any) => h.max_depth_m || 0));
     const highestWarning = prediction.hours[0]?.warning_level || "NORMAL";
@@ -85,7 +84,7 @@ app.post('/api/save-prediction', async (req: Request, res: Response) => {
 
 // ====================== HISTORY ======================
 app.get('/api/history', async (req: any, res: any) => {
-  const prisma = new PrismaClient();   // ← created here
+  // import prisma from './lib/prisma'
 
   try {
     const predictions = await prisma.prediction.findMany({
