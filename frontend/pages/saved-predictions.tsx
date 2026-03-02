@@ -140,13 +140,13 @@ export default function SavedPredictionsPage() {
                       <div>
                         <p className="text-sm text-gray-600">Initial Lake Level</p>
                         <p className="text-lg font-semibold text-gray-900">
-                          {selectedPrediction.lake_level[0].toFixed(3)} m
+                          {selectedPrediction.lake_level?.[0]?.toFixed(3) ?? 'N/A'} m
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Final Lake Level (Hour 6)</p>
                         <p className="text-lg font-semibold text-blue-600">
-                          {selectedPrediction.prediction.hours[5]?.predicted_level_m.toFixed(3)} m
+                          {selectedPrediction.prediction?.hours?.[5]?.predicted_level_m.toFixed(3) ?? 'N/A'} m
                         </p>
                       </div>
                     </div>
@@ -168,7 +168,7 @@ export default function SavedPredictionsPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {selectedPrediction.prediction.hours.map((hour, idx) => (
+                          {selectedPrediction.prediction?.hours?.map((hour, idx) => (
                             <tr key={idx} className="border-b hover:bg-gray-50">
                               <td className="px-4 py-3 font-semibold">{hour.hour}</td>
                               <td className="px-4 py-3">{hour.predicted_level_m.toFixed(3)}</td>
@@ -184,7 +184,7 @@ export default function SavedPredictionsPage() {
                               <td className="px-4 py-3">{hour.max_depth_m.toFixed(2)} m</td>
                               <td className="px-4 py-3">{hour.mean_depth_m.toFixed(2)} m</td>
                             </tr>
-                          ))}
+                          )) || <tr><td colSpan={6} className="px-4 py-3 text-center text-gray-500">No forecast data available</td></tr>}
                         </tbody>
                       </table>
                     </div>
@@ -197,13 +197,13 @@ export default function SavedPredictionsPage() {
                       <div>
                         <p className="text-sm text-gray-600 mb-2 font-semibold">Rainfall (mm)</p>
                         <p className="font-mono text-sm bg-gray-50 p-3 rounded border border-gray-200">
-                          {selectedPrediction.rainfall.map(r => r.toFixed(2)).join(', ')}
+                          {selectedPrediction.rainfall?.length > 0 ? selectedPrediction.rainfall.map(r => r.toFixed(2)).join(', ') : 'N/A'}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600 mb-2 font-semibold">Lake Level (m)</p>
                         <p className="font-mono text-sm bg-gray-50 p-3 rounded border border-gray-200">
-                          {selectedPrediction.lake_level.map(l => l.toFixed(3)).join(', ')}
+                          {selectedPrediction.lake_level?.length > 0 ? selectedPrediction.lake_level.map(l => l.toFixed(3)).join(', ') : 'N/A'}
                         </p>
                       </div>
                     </div>
