@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
@@ -155,7 +156,16 @@ export default function FloodMap() {
     <div className="flex h-screen bg-gray-50">
       {/* LEFT SIDEBAR - Input Form */}
       <div className="w-96 bg-white border-r border-gray-200 p-8 overflow-auto flex flex-col">
-        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">Flood Predictor</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold flex items-center gap-3">Flood Predictor</h1>
+          <Link
+            href="/saved-predictions"
+            className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition"
+            title="View saved predictions"
+          >
+            📋
+          </Link>
+        </div>
 
         <div className="space-y-6 flex-1">
           <div>
