@@ -126,7 +126,7 @@ export default function FloodMap() {
 
       const data = await res.json();
       if (data.success) {
-        alert(`✅ Prediction saved to database! ID: ${data.id}`);
+        alert(`Prediction saved to database. ID: ${data.id}`);
         fetchHistory(); // refresh the history table
       } else {
         alert('Failed to save');
