@@ -21,6 +21,7 @@
   },
   "scripts": {
     "start": "node src/server.ts",
-    "dev": "nodemon src/server.ts"
+    "dev": "nodemon src/server.ts",
+    "postinstall": "npx prisma generate"
   }
 }
