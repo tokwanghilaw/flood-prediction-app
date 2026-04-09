@@ -112,7 +112,13 @@ app.get('/api/test', (req, res) => {
   res.json({ status: 'ok', message: 'Backend is working perfectly!' });
 });
 
-app.listen(port, () => {
-  console.log(`🚀 Backend running → http://localhost:${port}`);
-  console.log(`Test here → http://localhost:${port}/api/test`);
-});
+// Export for Vercel serverless deployment
+export default app;
+
+// For local development
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`🚀 Backend running → http://localhost:${port}`);
+    console.log(`Test here → http://localhost:${port}/api/test`);
+  });
+}
