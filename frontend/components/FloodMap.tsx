@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/backend';
+
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
 const ImageOverlay = dynamic(() => import('react-leaflet').then(mod => mod.ImageOverlay), { ssr: false });
@@ -66,7 +68,7 @@ export default function FloodMap() {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/history');
+      const res = await fetch(`${API_BASE}/api/history`);
       if (res.ok) {
         const data = await res.json();
         setHistory(data);
@@ -91,8 +93,7 @@ export default function FloodMap() {
     }
 
     try {
-      const backendPort = 5000;
-      const res = await fetch(`http://localhost:${backendPort}/api/predict`, {
+      const res = await fetch(`${API_BASE}/api/predict`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rainfall: rainfallArr, lake_level: lakeArr }),
@@ -115,7 +116,7 @@ export default function FloodMap() {
     if (!prediction) return;
 
     try {
-      const res = await fetch('http://localhost:5000/api/save-prediction', {
+      const res = await fetch(`${API_BASE}/api/save-prediction`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

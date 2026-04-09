@@ -5,7 +5,7 @@ import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 //dfghjk
 const app = express();
-const port = 5000;
+const port = Number(process.env.PORT) || 5000;
 import prisma from './lib/prisma'
 
 app.use(cors());
@@ -15,6 +15,7 @@ app.use(express.json());
 app.post('/api/predict', async (req: any, res: any) => {
   console.log('📥 Received prediction request:', req.body);
   const pythonUrl = process.env.PYTHON_API_URL || 'http://localhost:8000';
+  console.log(`🌐 Using Python API URL: ${pythonUrl}`);
 
   try {
     console.log('⏳ Calling Python API (may take 30-60s first time)...');
@@ -28,7 +29,7 @@ app.post('/api/predict', async (req: any, res: any) => {
     res.status(500).json({ 
       error: 'Prediction failed', 
       details: error.message,
-      hint: 'First prediction can take up to 60 seconds. Wait longer or check Python terminal.'
+      hint: 'Start the Python service at python_service/app.py or set PYTHON_API_URL to the deployed predictor.',
     });
   }
 });
@@ -107,5 +108,5 @@ app.get('/api/test', (req, res) => {
 
 app.listen(port, () => {
   console.log(`🚀 Backend running → http://localhost:${port}`);
-  console.log('Test here → http://localhost:5000/api/test');
+  console.log(`Test here → http://localhost:${port}/api/test`);
 });

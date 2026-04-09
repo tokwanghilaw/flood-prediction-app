@@ -35,7 +35,8 @@ export default function SavedPredictionsPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:5000/api/history');
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/backend';
+      const res = await fetch(`${apiBase}/api/history`);
       if (res.ok) {
         const data = await res.json();
         setSavedPredictions(data);

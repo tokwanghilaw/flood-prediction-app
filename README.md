@@ -42,6 +42,20 @@ npm run dev
 
 This should start the API server (see `backend/src/server.ts`). By default it runs on a port configured in the backend (common ports: `3001` or `4000`).
 
+4. Python prediction service (local development)
+
+The backend proxy expects a Python prediction API at `http://localhost:8000` unless `PYTHON_API_URL` is set.
+
+```bash
+cd python_service
+py -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+py app.py
+```
+
+If you want to use a deployed service instead, set `PYTHON_API_URL` in `backend/.env` or your environment.
+
 3. Frontend: run Next.js in development mode
 
 ```bash

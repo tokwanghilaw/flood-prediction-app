@@ -6,7 +6,8 @@
     "@types/node": "^25.2.3",
     "@types/pg": "^8.16.0",
     "nodemon": "^3.1.14",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.6.0",
@@ -20,7 +21,8 @@
     "pg": "^8.20.0"
   },
   "scripts": {
-    "start": "node src/server.ts",
+    "build": "npx tsc --project tsconfig.json",
+    "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
     "postinstall": "npx prisma generate"
   }
