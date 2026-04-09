@@ -1,141 +1,216 @@
 
 # Flood Prediction App
 
-A full-stack application for flood prediction, including a backend API, frontend (Next.js), a model directory for ML artifacts, and a database folder for storage and migrations.
+A full-stack flood prediction system with a Next.js frontend, Node.js backend API, Python ML service, and PostgreSQL database.
 
-**Status:** Work in progress — basic backend and frontend scaffolding present.
+**Status:** Active development with Vercel monorepo deployment support.
 
-**Tech stack:** Node.js, TypeScript, Next.js (frontend), Express (or similar) backend, Postgres-compatible database (see /database).
+**Tech stack:** 
+- Frontend: Next.js + React (TypeScript)
+- Backend: Express + Node.js (TypeScript) + Prisma ORM
+- ML Service: Python (ConvLSTM model)
+- Database: PostgreSQL (Supabase)
+- Deployment: Vercel (monorepo mode)
 
 **Repository layout**
 
-- `backend/` : Backend service (API server). See [backend/src/server.ts](backend/src/server.ts#L1) for entry point.
-- `frontend/` : Next.js application (UI).
-- `database/` : Database schema, migrations, or local DB helpers.
-- `model/` : Machine learning model files, training scripts, or serialized artifacts.
-- `public/`, `styles/` : Static assets and global styles for frontend.
+- `backend/` : Express API server with Prisma ORM
+- `frontend/` : Next.js application
+- `python_service/` : Python prediction service (ConvLSTM model)
+- `vercel.json` : Monorepo deployment config
 
 **Quick Start (local development)**
 
 Prerequisites:
-- Node.js 18+ (or the LTS you prefer)
-- npm or yarn
-- A running Postgres-compatible database (optional for some local runs)
+- Node.js 18+
+- Python 3.9+
+- PostgreSQL database (or Supabase)
 
-1. Install dependencies for both projects
-
-```bash
-# from repository root
-cd backend
-npm install
-
-cd ../frontend
-npm install
-```
-
-2. Backend: run development server
-
-```bash
-cd backend
-npm run dev
-```
-
-This should start the API server (see `backend/src/server.ts`). By default it runs on a port configured in the backend (common ports: `3001` or `4000`).
-
-4. Python prediction service (local development)
-
-The backend proxy expects a Python prediction API at `http://localhost:8000` unless `PYTHON_API_URL` is set.
-
-```bash
-cd python_service
-py -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-py app.py
-```
-
-If you want to use a deployed service instead, set `PYTHON_API_URL` in `backend/.env` or your environment.
-
-3. Frontend: run Next.js in development mode
-
-```bash
-cd frontend
-npm run dev
-```
-
-Open `http://localhost:3000` (or the port printed by Next.js).
-
-**Environment variables**
-
-Create `.env` files in `backend/` and `frontend/` as needed. Common backend variables:
-
-- `PORT` - HTTP port for the backend
-- `DATABASE_URL` - full connection string for Postgres
-- `MODEL_PATH` - optional path to model artifacts
-- `NODE_ENV` - `development` | `production`
-
-Frontend common variables (prefix with `NEXT_PUBLIC_` for browser-exposed values):
-
-- `NEXT_PUBLIC_API_URL` - base URL for the backend API
-
-Add any additional variables used by your services.
-
-**Backend: APIs and usage**
-
-- The backend entrypoint is [backend/src/server.ts](backend/src/server.ts#L1). Implemented routes and endpoints should be documented inline in that file or in this README as they are added.
-- Example endpoints you might expect: `/api/predict`, `/api/status`, `/api/data`.
-
-Example curl request (replace host/port as needed):
-
-```bash
-curl -X POST http://localhost:3001/api/predict \
-	-H "Content-Type: application/json" \
-	-d '{"features": [ ... ]}'
-```
-
-**Database**
-
-- The `database/` folder holds schema, migrations, and helpers. Use your preferred migration tool (e.g., `knex`, `typeorm`, `prisma`, or `pg-migrate`).
-- Ensure `DATABASE_URL` is set before running migrations.
-
-**Model**
-
-- The `model/` directory is reserved for training notebooks, serialized models, and helper scripts. When deploying, ensure the backend can access the model artifacts via `MODEL_PATH` or an S3-like storage.
-
-**Testing**
-
-- Add unit and integration tests to `backend/` and `frontend/` as needed. Typical commands:
+**Step 1: Install dependencies**
 
 ```bash
 # Backend
 cd backend
-npm test
+npm install
 
 # Frontend
+cd ../frontend
+npm install
+```
+
+**Step 2: Set up environment variables**
+
+Create `.env` files:
+
+`backend/.env`:
+```env
+DATABASE_URL="postgresql://user:password@host:5432/floodforecast"
+PYTHON_API_URL=http://localhost:8000
+PORT=5000
+NODE_ENV=development
+```
+
+`frontend/.env.local`:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_...
+```
+
+**Step 3: Start services in separate terminals**
+
+**Terminal 1: Backend API**
+```bash
+cd backend
+npm run dev
+# Runs on http://localhost:5000
+```
+
+**Terminal 2: Frontend**
+```bash
+cd frontend
+npm run dev
+# Runs on http://localhost:3000
+```
+
+**Terminal 3: Python service**
+```bash
+cd python_service
+python -m venv .venv
+.venv\Scripts\activate  # or `source .venv/bin/activate` on Mac/Linux
+pip install -r requirements.txt
+python app.py
+# Runs on http://localhost:8000
+```
+
+Frontend available at `http://localhost:3000`.
+
+**Environment Variables**
+
+**Backend (backend/.env)**
+
+- `DATABASE_URL` ⭐ (required) - PostgreSQL connection string
+- `PYTHON_API_URL` - URL of Python prediction service (default: `http://localhost:8000`)
+- `PORT` - HTTP port (default: `5000`)
+- `NODE_ENV` - `development` or `production`
+
+**Frontend (frontend/.env.local or .env.production)**
+
+- `NEXT_PUBLIC_API_URL` - Backend API URL
+  - **Local dev:** `http://localhost:5000`
+  - **Vercel:** leave empty or set to `/backend` for monorepo routing
+- `NEXT_PUBLIC_SUPABASE_URL` ⭐ (required) - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` ⭐ (required) - Supabase publishable key
+
+Note: Frontend variables prefixed with `NEXT_PUBLIC_` are exposed to the browser.
+
+**API Endpoints**
+
+**Prediction**
+```
+POST /api/predict
+Body: { rainfall: number[], lake_level: number[] }
+Returns: { hours: [...], bounds: {...}, dem_png: string, ... }
+```
+
+**Save Prediction**
+```
+POST /api/save-prediction
+Body: { prediction: {...}, rainfall: number[], lake_level: number[] }
+Returns: { success: boolean, id: number }
+```
+
+**History**
+```
+GET /api/history
+Returns: [{ id, createdAt, rainfall, lake_level }, ...]
+```
+
+**Health Check**
+```
+GET /api/test
+Returns: { status: 'ok', message: '...' }
+```
+
+For full endpoint details, see [backend/src/server.ts](backend/src/server.ts#L1).
+
+**Deployment to Vercel**
+
+This monorepo is configured for Vercel using `vercel.json`:
+
+```json
+{
+  "experimentalServices": {
+    "frontend": {
+      "entrypoint": "frontend",
+      "routePrefix": "/"
+    },
+    "backend": {
+      "entrypoint": "backend",
+      "routePrefix": "/backend"
+    }
+  }
+}
+```
+
+**Steps:**
+
+1. Connect repo to Vercel
+2. Set environment variables in Vercel Project Settings:
+   - `DATABASE_URL` (PostgreSQL connection)
+   - `PYTHON_API_URL` (URL of deployed Python service)
+   - `NEXT_PUBLIC_API_URL` (should be `/backend` for monorepo)
+   - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY`
+3. Deploy
+
+The frontend will call the backend via `/backend` routes automatically.
+
+**Important:** The Python ML service must be hosted separately (e.g., on Railway, Hugging Face Spaces, or your own server) and its URL set in `PYTHON_API_URL`.
+
+**Development vs Production**
+
+| Aspect | Local Dev | Production |
+|--------|-----------|------------|
+| Backend start | `npm run dev` (TypeScript) | `npm run build && npm run start` (compiled JS) |
+| Frontend API URL | `http://localhost:5000` | `/backend` (Vercel monorepo routing) |
+| Python service | `http://localhost:8000` | `${PYTHON_API_URL}` env var |
+| Database | Local PostgreSQL or Supabase | Supabase (via `DATABASE_URL`) |
+
+**Testing**
+
+```bash
+# Backend tests (when available)
+cd backend
+npm test
+
+# Frontend tests (when available)
 cd frontend
 npm test
 ```
 
-**Production / Deployment**
+**Troubleshooting**
 
-- Build the frontend using `npm run build` inside `frontend/` and serve with `next start` or a hosting provider (Vercel, Netlify for static parts, or a Node server for SSR).
-- Build the backend for production (`npm run build`) and run the compiled JS with Node or use a process manager like PM2 or a container.
+**Frontend can't reach backend:**
+- Local: Make sure `NEXT_PUBLIC_API_URL=http://localhost:5000` is set in `frontend/.env.local`
+- Vercel: Ensure backend service is properly configured in `vercel.json` and responding on `/backend` prefix
+
+**Python service errors:**
+- Verify Python venv is activated
+- Check `PYTHON_API_URL` is set correctly in `backend/.env`
+- Backend will return a helpful error message if Python service is unreachable
+
+**Database connection errors:**
+- Verify `DATABASE_URL` is correct (check Supabase credentials)
+- Run `npx prisma generate` in both `backend/` and `frontend/` to sync schema
 
 **Contributing**
 
-- Fork the repo, create feature branches, and open pull requests describing changes and run instructions.
-- Keep changes small and include tests where appropriate.
+Fork the repo, create feature branches, and submit PRs. Keep commits focused and include tests where appropriate.
 
-**Where to look next**
+**Resources**
 
 - Backend entry: [backend/src/server.ts](backend/src/server.ts#L1)
-- Frontend entry: `frontend/pages/index.tsx`
-
-**Contact / Maintainers**
-
-If you need help or want to get involved, open an issue or contact the repository maintainer listed in the project settings.
-
----
-
-This README provides a starting documentation layout. Update the API endpoints, environment variables, and commands to match the concrete details of your project as you complete implementation.
+- Frontend entry: [frontend/pages/index.tsx](frontend/pages/index.tsx)
+- Database schema: [backend/prisma/schema.prisma](backend/prisma/schema.prisma)
+- Vercel config: [vercel.json](vercel.json)
 
