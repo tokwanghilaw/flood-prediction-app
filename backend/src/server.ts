@@ -36,6 +36,12 @@ app.post('/api/predict', async (req: any, res: any) => {
 
 // ====================== SAVE PREDICTION TO DATABASE ======================
 app.post('/api/save-prediction', async (req: Request, res: Response) => {
+  console.log('📌 Save prediction request', {
+    hasPrediction: !!req.body.prediction,
+    rainfallType: Array.isArray(req.body.rainfall) ? 'array' : typeof req.body.rainfall,
+    lakeLevelType: Array.isArray(req.body.lake_level) ? 'array' : typeof req.body.lake_level,
+  });
+
   try {
     const { prediction, rainfall, lake_level } = req.body;
 

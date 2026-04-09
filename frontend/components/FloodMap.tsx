@@ -115,6 +115,8 @@ export default function FloodMap() {
   const handleSave = async () => {
     if (!prediction) return;
 
+    console.log('📤 Saving prediction to', API_BASE);
+
     try {
       const res = await fetch(`${API_BASE}/api/save-prediction`, {
         method: 'POST',
@@ -126,16 +128,32 @@ export default function FloodMap() {
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        console.error('Save response not JSON', { status: res.status, text });
+        alert(`Save failed: unexpected response (${res.status})`);
+        return;
+      }
+
+      if (!res.ok) {
+        console.error('Save failed', { status: res.status, data });
+        alert(`Save failed: ${data?.error || data?.details || res.statusText}`);
+        return;
+      }
+
       if (data.success) {
         alert(`Prediction saved to database. ID: ${data.id}`);
         fetchHistory(); // refresh the history table
       } else {
-        alert('Failed to save');
+        console.error('Save endpoint returned failure', data);
+        alert(`Save failed: ${data?.error || data?.details || 'unknown error'}`);
       }
-    } catch (err) {
-      alert('Failed to save to database');
-      console.error(err);
+    } catch (err: any) {
+      console.error('Save request error', err);
+      alert(`Failed to save to database: ${err.message || err}`);
     }
   };
 
